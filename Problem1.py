@@ -8,7 +8,7 @@ __author__ = 'cfa2'
 
 class Problem1:
     """Sample Usage: Problem1.getAnswerForProblem1(1000) """
-    def getAnswerForProblem1(maxvalue):
+    def getAnswerForProblem1(sef,maxvalue):
         sum=0
         for elem in range(maxvalue):
             if elem % 3 == 0 or elem % 5 == 0:
