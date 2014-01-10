@@ -1,0 +1,70 @@
+require 'mechanize'
+require 'nokogiri'
+load 'dataaccess.rb'
+class Scrappcontroller
+
+
+    def initialize
+      url = "http://m.polskibus.com/search-mobile"
+      @agent = Mechanize.new
+      @rgx = /\d*[.]\d\d/
+      @depRgx = /\d+[^: ]\d+.\d\d/
+      @timRgx=/\d\d:\d\d/
+      @dataAccess = DataAccess.new()
+    end
+
+    def SearchConnection(departure,destination)
+      puts "START..."
+      begin
+      @agent.get("http://m.polskibus.com/polskibus/pax/1")
+      puts 'pax added'
+      @agent.get("http://m.polskibus.com/polskibus/origin/8")
+      puts 'origin set'
+      @agent.get("http://m.polskibus.com/polskibus/destinations")
+      @agent.get("http://m.polskibus.com/polskibus/destination/9")
+      puts 'dest set'
+      @agent.get("http://m.polskibus.com/polskibus/outbounds")
+      @agent.get("http://m.polskibus.com/polskibus/returns")
+      @agent.get("http://m.polskibus.com/polskibus/outbound/22/01/2014")
+      puts 'date set'
+      @agent.get("http://m.polskibus.com/polskibus/returns")
+      @agent.get("http://m.polskibus.com/polskibus/return/1")
+      @page=@agent.get("http://m.polskibus.com/search-results")
+      puts "DATA DOWNLOADED..."
+
+      rescue
+      #error - rerun
+        puts "ERROR - RETRY"
+        SearchConnection(1,2)
+      end
+      Nokogiri.HTML(@page.body).css('label').each do |link|
+        puts "PROCESSING DATA..."
+       # prepareData(el.text)
+
+
+        depTime = @timRgx.match(link).to_s
+        price = @rgx.match(link).to_s
+        departure = @depRgx.match(link).to_s
+        #begin
+        @dataAccess.AddConnection("Kielce","Kraków",departure,depTime,price)
+       # rescue
+          puts "ERROR - DB"
+          SearchConnection(1,2)
+       # end
+
+      end
+
+=begin
+      def prepareData(link)
+        depTime = timRgx.match(link).text
+        price = rgx.match(link).text
+        departure = depRgx.match(link).text
+
+        puts depTime
+        puts price
+        puts departure
+      end
+=end
+
+    end
+end
